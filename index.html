@@ -14,17 +14,13 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=Space+Mono:wght@400;700&display=swap');
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
-:root{
-  --bg:#0c1310;--surface:#15211c;--surface2:#1b2a23;--border:rgba(180,205,192,0.11);
+:root{--bg:#0c1310;--surface:#15211c;--surface2:#1b2a23;--border:rgba(180,205,192,0.11);
   --gold:#e7b35e;--gold-soft:#f3d49a;--teal:#62b6a6;--text:#ece6d8;--muted:#8b988f;
-  --slow:#d99a5b;--good:#62b6a6;
-}
-body{
-  font-family:'Noto Sans TC',sans-serif;color:var(--text);min-height:100vh;
+  --slow:#d99a5b;--good:#62b6a6;--up:#ef5b57;--down:#3fb87a;}
+body{font-family:'Noto Sans TC',sans-serif;color:var(--text);min-height:100vh;
   background:radial-gradient(120% 60% at 50% -10%,rgba(231,179,94,0.13),transparent 60%),
              radial-gradient(90% 50% at 100% 100%,rgba(98,182,166,0.08),transparent 55%),var(--bg);
-  padding:calc(26px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
-}
+  padding:calc(26px + env(safe-area-inset-top)) 16px calc(60px + env(safe-area-inset-bottom));}
 .wrap{max-width:480px;margin:0 auto;}
 .kicker{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
 .title{font-family:'Noto Serif TC',serif;font-weight:700;font-size:21px;margin-top:2px;letter-spacing:1px;}
@@ -35,7 +31,7 @@ body{
 .hero::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;
   background:radial-gradient(circle,rgba(231,179,94,0.18),transparent 70%);pointer-events:none;}
 .hero-label{font-size:12px;color:var(--muted);letter-spacing:2px;}
-.total{font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(38px,12vw,52px);line-height:1.05;margin-top:6px;color:var(--gold-soft);}
+.total{font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(36px,11vw,50px);line-height:1.05;margin-top:6px;color:var(--gold-soft);}
 .total .cur{font-size:18px;color:var(--gold);margin-right:6px;vertical-align:6px;}
 .hero-meta{display:flex;gap:18px;margin-top:14px;font-size:12px;color:var(--muted);}
 .hero-meta b{color:var(--teal);font-family:'Space Mono',monospace;font-weight:700;}
@@ -46,24 +42,46 @@ body{
 .input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:11px;color:var(--text);
   padding:12px 13px;font-size:16px;font-family:'Noto Sans TC',sans-serif;outline:none;transition:border-color .15s;}
 .input:focus{border-color:var(--gold);}
-.amt{font-family:'Space Mono',monospace;font-weight:700;font-size:22px;letter-spacing:1px;}
-.row2{display:flex;gap:10px;}.row2>div{flex:1;}
+select.input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b988f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;}
+.amt{font-family:'Space Mono',monospace;font-weight:700;font-size:20px;letter-spacing:1px;}
+.row2{display:flex;gap:10px;}.row2>div,.row2>button{flex:1;}
 .btn{width:100%;margin-top:5px;border:none;border-radius:12px;cursor:pointer;
   background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2607;font-weight:700;font-size:15px;
   padding:13px;letter-spacing:2px;font-family:'Noto Sans TC',sans-serif;transition:transform .08s,filter .15s;}
 .btn:active{transform:scale(.985);filter:brightness(1.05);}
-.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:12px;}
-.legend span{display:flex;align-items:center;gap:5px;}
-.dot{width:8px;height:8px;border-radius:50%;flex:none;}
-.mon{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
-.mon:last-child{border-bottom:none;}
-.mon-name{font-weight:500;font-size:14px;min-width:42px;}
-.mon-tag{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);}
-.mon-note{font-size:11px;color:var(--muted);flex:1;}
-.mon-amt{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:var(--gold-soft);}
-.entry{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.goal{padding:13px 0;border-bottom:1px solid var(--border);}
+.goal:last-child{border-bottom:none;}
+.goal-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.goal-name{font-weight:500;font-size:15px;}
+.goal-pct{font-family:'Space Mono',monospace;font-weight:700;font-size:18px;color:var(--teal);}
+.bar{height:13px;border-radius:8px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative;border:1px solid var(--border);}
+.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#347d75,#62b6a6 60%,#86d8ca);position:relative;
+  transition:width .7s cubic-bezier(.2,.8,.2,1);min-width:3px;}
+.bar-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:translateX(-100%);animation:sheen 2.8s ease-in-out infinite;}
+@keyframes sheen{0%{transform:translateX(-100%);}55%,100%{transform:translateX(240%);}}
+.goal-sub{display:flex;justify-content:space-between;margin-top:7px;font-size:12px;color:var(--muted);}
+.goal-sub span{font-family:'Space Mono',monospace;}
+.link{background:none;border:none;color:var(--teal);font-size:12px;cursor:pointer;font-family:'Noto Sans TC';}
+.mini{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px;font-size:13px;font-family:'Noto Sans TC';cursor:pointer;}
+.mini.gold{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#3a2607;font-weight:700;border:none;}
+.mini.danger{color:#e88c6a;}
+.addgoal{width:100%;background:none;border:1px dashed var(--border);color:var(--teal);border-radius:11px;padding:11px;font-size:13px;cursor:pointer;font-family:'Noto Sans TC';margin-top:4px;}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+.sumcell{background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:11px 12px;}
+.sumcell .l{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.sumcell .v{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;margin-top:3px;}
+.sumcell.big{grid-column:1 / -1;}
+.sumcell.big .v{font-size:25px;}
+.price-row{display:flex;gap:8px;margin-top:4px;}
+.price-row .input{flex:1;}.price-row .mini{flex:none;padding:10px 14px;}
+.price-time{font-size:11px;color:var(--muted);margin-top:6px;text-align:right;}
+.hint{font-size:13px;color:var(--muted);line-height:1.75;padding:8px 2px 2px;}
+.hint b{color:var(--text);}
+.chip{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--border);color:var(--teal);margin-left:6px;}
+.entry{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
 .entry:last-child{border-bottom:none;}
-.e-date{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);min-width:60px;}
+.e-date{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);min-width:54px;}
 .e-note{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .e-amt{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--gold-soft);}
 .x{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 2px;line-height:1;}
@@ -72,11 +90,18 @@ body{
 .del .yes{color:#e88c6a;border-color:rgba(232,140,106,.4);}
 .empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px;line-height:1.7;}
 .backup{display:flex;gap:10px;}
-.backup button{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:11px;
-  padding:11px;font-size:13px;font-family:'Noto Sans TC',sans-serif;cursor:pointer;}
-.backup button:active{filter:brightness(1.2);}
+.backup button{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:11px;padding:11px;font-size:13px;font-family:'Noto Sans TC';cursor:pointer;}
+.reset-btn{width:100%;margin-top:10px;background:none;border:1px solid rgba(232,140,106,.35);color:#e88c6a;border-radius:11px;padding:11px;font-size:13px;cursor:pointer;font-family:'Noto Sans TC';}
 .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:22px;line-height:1.7;opacity:.85;}
-.err{color:#e88c6a;font-size:12px;margin-top:8px;text-align:center;min-height:14px;}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:#243029;border:1px solid var(--border);color:var(--text);padding:11px 20px;border-radius:24px;font-size:13px;
+  display:none;z-index:60;box-shadow:0 12px 34px -12px rgba(0,0,0,.75);}
+.overlay{position:fixed;inset:0;background:rgba(6,10,8,0.72);backdrop-filter:blur(2px);display:none;
+  align-items:center;justify-content:center;padding:28px;z-index:100;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px 20px;max-width:340px;width:100%;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.8);animation:rise .25s ease both;}
+.modal-msg{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:18px;}
+.modal-btns{display:flex;gap:10px;}
 @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 </style>
 </head>
@@ -87,111 +112,245 @@ body{
   <div class="sub">賺多買多 · 年底分批進場 · 只用閒錢</div>
 
   <div class="hero">
-    <div class="hero-label">累計可投資金額</div>
+    <div class="hero-label">累計外快總額</div>
     <div class="total"><span class="cur">NT$</span><span id="total">0</span></div>
     <div class="hero-meta"><div>共 <b id="count">0</b> 筆</div><div>本月 <b id="mtotal">0</b></div></div>
   </div>
 
+  <div class="card"><div class="card-t">目標 · 水位</div><div id="goals"></div></div>
+
   <div class="card">
     <div class="card-t">記一筆外快</div>
-    <div class="field"><label>金額（NT$）</label>
-      <input class="input amt" id="amount" inputmode="numeric" type="number" placeholder="0"></div>
+    <div class="field"><label>金額（NT$）</label><input class="input amt" id="amount" inputmode="numeric" type="number" placeholder="0"></div>
     <div class="row2">
       <div class="field"><label>日期</label><input class="input" id="date" type="date"></div>
-      <div class="field"><label>來源（選填）</label><input class="input" id="note" type="text" placeholder="如：接案"></div>
+      <div class="field"><label>放進哪個目標</label><select class="input" id="goalsel"></select></div>
     </div>
-    <button class="btn" id="addbtn">記 一 筆</button>
-    <div class="err" id="err"></div>
+    <div class="field"><label>來源（選填）</label><input class="input" id="note" type="text" placeholder="如：接案"></div>
+    <button class="btn" data-action="addEntry">記 一 筆</button>
   </div>
 
-  <div class="card" id="months-card" style="display:none">
-    <div class="card-t">每月進度</div>
-    <div class="legend">
-      <span><i class="dot" style="background:var(--good)"></i>順風月·火力全開</span>
-      <span><i class="dot" style="background:var(--slow)"></i>低谷月·配速就好</span>
+  <div class="card"><div class="card-t">外快明細</div><div id="list"></div></div>
+
+  <div class="card">
+    <div class="card-t">投資持有 · 比特幣</div>
+    <div class="field"><label>這次買入成本（NT$）</label><input class="input amt" id="bcost" inputmode="numeric" type="number" placeholder="0"></div>
+    <div class="row2">
+      <div class="field"><label>買入數量（BTC）</label><input class="input" id="bqty" inputmode="decimal" type="number" placeholder="0.00"></div>
+      <div class="field"><label>日期</label><input class="input" id="bdate" type="date"></div>
     </div>
-    <div id="months"></div>
+    <button class="btn" data-action="addBuy">記 錄 買 入</button>
+    <div id="holdings" style="margin-top:14px"></div>
   </div>
 
   <div class="card">
-    <div class="card-t">明細</div>
-    <div id="list"><div class="empty">還沒有記錄。<br>接到第一筆外快，就記上來吧。</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-t">備份</div>
+    <div class="card-t">備份 & 重置</div>
     <div class="backup">
-      <button id="exportbtn">匯出備份</button>
-      <button id="importbtn">匯入</button>
+      <button data-action="export">匯出備份</button>
+      <button data-action="import">匯入</button>
     </div>
     <input type="file" id="importfile" accept="application/json,.json" style="display:none">
+    <button class="reset-btn" data-action="reset">⚠ 全部重置（清空所有資料）</button>
   </div>
 
   <div class="foot">
-    資料只存在這支手機裡，不會上傳。建議偶爾「匯出備份」存一份。<br>
-    外快若加總超過免稅門檻仍須申報，先留稅金／備用再算可投金額。
+    資料只存在這支手機裡，不會上傳。建議偶爾「匯出備份」。<br>
+    漲跌幅依台股慣例：紅漲綠跌。外快加總超過免稅門檻仍須申報。
   </div>
 </div>
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay"><div class="modal">
+  <div class="modal-msg" id="modalmsg"></div>
+  <div class="modal-btns"><button class="mini" id="modalcancel">取消</button><button class="mini gold" id="modalok">確定</button></div>
+</div></div>
 
 <script>
-const KEY='waikuai_fund_entries_v1';
-const MONTH_PLAN={
- "2026-06":{label:"起跑",tone:"start",note:"定下外快、開專戶"},
- "2026-07":{label:"配速",tone:"slow",note:"低谷·維持別硬衝"},
- "2026-08":{label:"順風",tone:"good",note:"回血·拓案源"},
- "2026-09":{label:"順風",tone:"good",note:"最清醒·全力衝"},
- "2026-10":{label:"守穩",tone:"slow",note:"辰戌沖·別接糾紛案"},
- "2026-11":{label:"順風",tone:"good",note:"水幫身·最後衝刺"},
- "2026-12":{label:"主買",tone:"good",note:"分批進場開始"},
- "2027-01":{label:"收尾",tone:"good",note:"補最後一批"}
-};
-const MN=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-const pad=n=>String(n).padStart(2,'0');
-const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-const fmt=n=>Math.round(n).toLocaleString('en-US');
+const KEY='waikuai_fund_v2', OLD='waikuai_fund_entries_v1';
+let data={goals:[],entries:[],holdings:[],price:0,priceTime:0};
+let ui={confirm:null,editGoal:null,showGoalForm:false,lastGoal:''};
 const $=id=>document.getElementById(id);
-let entries=[],confirmId=null;
-const setErr=m=>{$('err').textContent=m||'';};
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');entries=Array.isArray(v)?v:[];}catch(e){entries=[];}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(entries));}catch(e){setErr('儲存失敗（裝置空間可能不足）');}}
-function render(){
-  const total=entries.reduce((s,e)=>s+e.amount,0);
-  const tm=todayStr().slice(0,7);
-  const mt=entries.filter(e=>e.date.slice(0,7)===tm).reduce((s,e)=>s+e.amount,0);
-  $('total').textContent=fmt(total);$('count').textContent=entries.length;$('mtotal').textContent=fmt(mt);
-  const m={};entries.forEach(e=>{const k=e.date.slice(0,7);m[k]=(m[k]||0)+e.amount;});
-  const keys=Object.keys(m).sort();
-  if(keys.length===0){$('months-card').style.display='none';}
-  else{$('months-card').style.display='';
-    $('months').innerHTML=keys.map(k=>{const mo=parseInt(k.split('-')[1],10);const p=MONTH_PLAN[k];
-      const tone=p?p.tone:'good';const c=tone==='slow'?'var(--slow)':tone==='start'?'var(--gold)':'var(--good)';
-      const tag=p?'<span class="mon-tag">'+p.label+'</span>':'';const note=p?p.note:k.split('-')[0];
-      return '<div class="mon"><span class="dot" style="background:'+c+'"></span><span class="mon-name">'+MN[mo-1]+'</span>'+tag+'<span class="mon-note">'+note+'</span><span class="mon-amt">'+fmt(m[k])+'</span></div>';}).join('');}
-  const sorted=[...entries].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const fmt=n=>Math.round(n||0).toLocaleString('en-US');
+const fmtQty=n=>{if(!n)return '0';let s=Number(n).toFixed(8);return s.replace(/\.?0+$/,'');};
+const uid=()=>Date.now()+'_'+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const timeStr=ts=>{if(!ts)return '';const d=new Date(ts);return (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes());};
+let tt;
+function toast(m){const t=$('toast');if(!m){t.style.display='none';return;}t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',2200);}
+
+// 自製確認彈窗（取代 iOS 主畫面模式下會被擋掉的 confirm）
+let modalRes=null;
+function showModal(msg,okLabel){$('modalmsg').textContent=msg;$('modalok').textContent=okLabel||'確定';$('overlay').style.display='flex';
+  return new Promise(res=>{modalRes=res;});}
+function closeModal(v){$('overlay').style.display='none';const r=modalRes;modalRes=null;if(r)r(v);}
+$('modalok').onclick=()=>closeModal(true);
+$('modalcancel').onclick=()=>closeModal(false);
+$('overlay').onclick=e=>{if(e.target===$('overlay'))closeModal(false);};
+
+function load(){
+  try{const raw=localStorage.getItem(KEY);
+    if(raw){const d=JSON.parse(raw);data={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],price:d.price||0,priceTime:d.priceTime||0};}
+    else{const old=localStorage.getItem(OLD);if(old){const arr=JSON.parse(old);if(Array.isArray(arr)){data.entries=arr;save();}}}
+  }catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){toast('儲存失敗（空間可能不足）');}}
+const goalSaved=gid=>data.entries.filter(e=>e.goalId===gid).reduce((s,e)=>s+e.amount,0);
+
+function renderAll(){
+  const total=data.entries.reduce((s,e)=>s+e.amount,0);
+  const tm=today().slice(0,7);
+  const mtot=data.entries.filter(e=>e.date.slice(0,7)===tm).reduce((s,e)=>s+e.amount,0);
+  $('total').textContent=fmt(total);$('count').textContent=data.entries.length;$('mtotal').textContent=fmt(mtot);
+
+  let gh='';
+  data.goals.forEach(g=>{
+    const saved=goalSaved(g.id);const pct=g.target>0?saved/g.target*100:0;const pctR=Math.round(pct*10)/10;
+    if(ui.editGoal===g.id){
+      gh+='<div class="goal"><div class="field"><label>名稱</label><input id="egn_'+g.id+'" class="input" value="'+esc(g.name)+'"></div>'
+        +'<div class="field"><label>目標金額（NT$）</label><input id="egt_'+g.id+'" class="input amt" type="number" value="'+g.target+'"></div>'
+        +'<div class="row2"><button class="mini gold" data-action="saveGoal" data-id="'+g.id+'">儲存</button>'
+        +'<button class="mini danger" data-action="delGoal" data-id="'+g.id+'">刪除</button>'
+        +'<button class="mini" data-action="cancelGoal">取消</button></div></div>';
+    }else{
+      const w=Math.max(0,Math.min(pct,100));
+      gh+='<div class="goal"><div class="goal-top"><span class="goal-name">'+esc(g.name)+'</span><span class="goal-pct">'+pctR+'%</span></div>'
+        +'<div class="bar"><div class="bar-fill" style="width:'+w+'%"></div></div>'
+        +'<div class="goal-sub"><span>'+fmt(saved)+' / '+fmt(g.target)+'</span><button class="link" data-action="editGoal" data-id="'+g.id+'">編輯</button></div></div>';
+    }
+  });
+  if(ui.showGoalForm){
+    gh+='<div class="goal"><div class="field"><label>目標名稱</label><input id="gname" class="input" placeholder="如：比特幣基金"></div>'
+      +'<div class="field"><label>目標金額（NT$）</label><input id="gtarget" class="input amt" type="number" placeholder="100000"></div>'
+      +'<div class="row2"><button class="mini gold" data-action="addGoal">新增目標</button><button class="mini" data-action="cancelGoal">取消</button></div></div>';
+  }else{
+    gh+='<button class="addgoal" data-action="showGoalForm">＋ 新增目標</button>';
+  }
+  if(data.goals.length===0&&!ui.showGoalForm){
+    gh='<div class="hint">還沒有目標。新增一個（例如「比特幣基金 100,000」），記外快時選它，就能看著水位一點點漲上來。</div>'+gh;
+  }
+  $('goals').innerHTML=gh;
+
+  let opts='<option value="">未分配</option>';
+  data.goals.forEach(g=>{opts+='<option value="'+g.id+'"'+(ui.lastGoal===g.id?' selected':'')+'>'+esc(g.name)+'</option>';});
+  $('goalsel').innerHTML=opts;
+
+  const sorted=[...data.entries].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
   if(sorted.length===0){$('list').innerHTML='<div class="empty">還沒有記錄。<br>接到第一筆外快，就記上來吧。</div>';}
   else{$('list').innerHTML=sorted.map(e=>{
-    const del=confirmId===e.id?'<span class="del"><button class="yes" data-del="'+e.id+'">刪</button><button data-cancel="1">取消</button></span>':'<button class="x" data-confirm="'+e.id+'">&times;</button>';
-    const note=(e.note||'外快').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    return '<div class="entry"><span class="e-date">'+e.date.slice(5)+'</span><span class="e-note">'+note+'</span><span class="e-amt">+'+fmt(e.amount)+'</span>'+del+'</div>';}).join('');}
+    const g=data.goals.find(x=>x.id===e.goalId);const chip=g?'<span class="chip">'+esc(g.name)+'</span>':'';
+    const del=(ui.confirm&&ui.confirm.id===e.id)
+      ?'<span class="del"><button class="yes" data-action="delEntryYes" data-id="'+e.id+'">刪</button><button data-action="cancelConfirm">取消</button></span>'
+      :'<button class="x" data-action="delEntry" data-id="'+e.id+'">&times;</button>';
+    return '<div class="entry"><span class="e-date">'+e.date.slice(5)+'</span><span class="e-note">'+esc(e.note||'外快')+chip+'</span><span class="e-amt">+'+fmt(e.amount)+'</span>'+del+'</div>';
+  }).join('');}
+
+  // 持有 — 現價列永遠顯示
+  const tc=data.holdings.reduce((s,h)=>s+h.cost,0);
+  const tq=data.holdings.reduce((s,h)=>s+h.qty,0);
+  const avg=tq>0?tc/tq:0;const price=data.price||0;const val=tq*price;const pl=val-tc;const plPct=tc>0?pl/tc*100:0;
+  const up=pl>=0;const col=up?'var(--up)':'var(--down)';const sg=up?'+':'';
+  let hh='<div class="price-row"><input id="priceinput" class="input" type="number" inputmode="numeric" placeholder="現價 NT$/BTC" value="'+(price||'')+'">'
+    +'<button class="mini" data-action="savePrice">套用</button><button class="mini gold" id="fetchbtn" data-action="fetchPrice">抓即時價</button></div>';
+  hh+='<div class="price-time">'+(data.priceTime?'比特幣現價 NT$'+fmt(price)+'／BTC · 更新於 '+timeStr(data.priceTime):'尚未設定現價，點「抓即時價」或手動輸入')+'</div>';
+  if(data.holdings.length===0){
+    hh+='<div class="hint">等你開始買進，在上面記錄每次的<b>成本（NT$）</b>和<b>數量（BTC）</b>，這裡就會顯示持有量、平均成本與<b>漲跌幅</b>。</div>';
+  }else{
+    hh+='<div class="sumgrid">'
+      +'<div class="sumcell big"><div class="l">漲跌幅</div><div class="v" style="color:'+col+'">'+sg+plPct.toFixed(2)+'%　<span style="font-size:14px">'+sg+'NT$'+fmt(pl)+'</span></div></div>'
+      +'<div class="sumcell"><div class="l">持有數量</div><div class="v">'+fmtQty(tq)+' BTC</div></div>'
+      +'<div class="sumcell"><div class="l">現值</div><div class="v">'+fmt(val)+'</div></div>'
+      +'<div class="sumcell"><div class="l">總成本</div><div class="v">'+fmt(tc)+'</div></div>'
+      +'<div class="sumcell"><div class="l">平均成本/BTC</div><div class="v">'+fmt(avg)+'</div></div></div>';
+    const bs=[...data.holdings].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
+    hh+='<div>'+bs.map(h=>'<div class="entry"><span class="e-date">'+h.date.slice(5)+'</span><span class="e-note">'+fmtQty(h.qty)+' BTC</span><span class="e-amt">NT$'+fmt(h.cost)+'</span><button class="x" data-action="delBuy" data-id="'+h.id+'">&times;</button></div>').join('')+'</div>';
+  }
+  $('holdings').innerHTML=hh;
 }
-function add(){const a=parseFloat($('amount').value);if(!a||a<=0){setErr('請輸入金額');return;}
-  entries.push({id:Date.now()+'_'+Math.random().toString(36).slice(2,6),date:$('date').value||todayStr(),amount:a,note:$('note').value.trim()});
-  save();setErr('');$('amount').value='';$('note').value='';$('date').value=todayStr();render();}
-$('list').addEventListener('click',ev=>{const t=ev.target;
-  if(t.dataset.confirm){confirmId=t.dataset.confirm;render();}
-  else if(t.dataset.del){entries=entries.filter(e=>e.id!==t.dataset.del);confirmId=null;save();render();}
-  else if(t.dataset.cancel){confirmId=null;render();}});
-$('addbtn').addEventListener('click',add);
-$('exportbtn').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify(entries,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download='外快基金備份_'+todayStr()+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
-$('importbtn').addEventListener('click',()=>$('importfile').click());
-$('importfile').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
-    if(Array.isArray(d)){if(confirm('匯入會覆蓋目前的資料，確定？')){entries=d;save();render();}}else setErr('檔案格式不對');}
-    catch(e){setErr('讀取失敗');}};r.readAsText(f);ev.target.value='';});
-$('date').value=todayStr();load();render();
+
+function addEntry(){
+  const a=parseFloat($('amount').value);if(!a||a<=0){toast('請輸入金額');return;}
+  const gid=$('goalsel').value||null;ui.lastGoal=gid||'';
+  data.entries.push({id:uid(),date:$('date').value||today(),amount:a,note:$('note').value.trim(),goalId:gid});
+  $('amount').value='';$('note').value='';$('date').value=today();save();renderAll();
+}
+function addGoal(){
+  const n=$('gname').value.trim();const t=parseFloat($('gtarget').value);
+  if(!n){toast('請輸入目標名稱');return;}if(!t||t<=0){toast('請輸入目標金額');return;}
+  data.goals.push({id:uid(),name:n,target:t});ui.showGoalForm=false;save();renderAll();
+}
+function saveGoal(id){
+  const g=data.goals.find(x=>x.id===id);if(!g)return;
+  const n=$('egn_'+id).value.trim();const t=parseFloat($('egt_'+id).value);
+  if(n)g.name=n;if(t&&t>0)g.target=t;ui.editGoal=null;save();renderAll();
+}
+async function delGoal(id){
+  if(!(await showModal('刪除這個目標？該目標下的外快記錄會變回「未分配」（不會消失）。','刪除')))return;
+  data.goals=data.goals.filter(g=>g.id!==id);data.entries.forEach(en=>{if(en.goalId===id)en.goalId=null;});ui.editGoal=null;save();renderAll();
+}
+function addBuy(){
+  const c=parseFloat($('bcost').value);const q=parseFloat($('bqty').value);
+  if(!c||c<=0){toast('請輸入成本');return;}if(!q||q<=0){toast('請輸入數量');return;}
+  data.holdings.push({id:uid(),date:$('bdate').value||today(),cost:c,qty:q});
+  $('bcost').value='';$('bqty').value='';$('bdate').value=today();save();renderAll();
+}
+async function delBuy(id){
+  if(!(await showModal('刪除這筆買入記錄？','刪除')))return;
+  data.holdings=data.holdings.filter(x=>x.id!==id);save();renderAll();
+}
+function savePrice(){const p=parseFloat($('priceinput').value);if(p&&p>0){data.price=p;data.priceTime=Date.now();save();renderAll();toast('現價已更新');}else toast('請輸入現價');}
+async function fetchPrice(){
+  const b=$('fetchbtn');if(b)b.textContent='抓取中…';let p=null;
+  try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=twd');
+    if(r.ok){const j=await r.json();if(j&&j.bitcoin&&j.bitcoin.twd)p=j.bitcoin.twd;}}catch(e){}
+  if(!p){try{const r=await fetch('https://api.coinbase.com/v2/exchange-rates?currency=BTC');
+    if(r.ok){const j=await r.json();const t=j&&j.data&&j.data.rates&&j.data.rates.TWD;if(t)p=parseFloat(t);}}catch(e){}}
+  if(p&&p>0){data.price=p;data.priceTime=Date.now();save();renderAll();toast('已抓到即時價');}
+  else{if(b)b.textContent='抓取失敗·請手動輸入';toast('暫時抓不到，請手動輸入現價');setTimeout(renderAll,1800);}
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='外快基金備份_'+today()+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+async function resetAll(){
+  if(!(await showModal('確定要清空「全部」資料嗎？所有目標、外快與投資記錄都會刪除，且無法復原。建議先匯出備份。','清空全部')))return;
+  data={goals:[],entries:[],holdings:[],price:0,priceTime:0};ui={confirm:null,editGoal:null,showGoalForm:false,lastGoal:''};save();renderAll();toast('已全部重置');
+}
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action]');if(!el)return;
+  const a=el.dataset.action,id=el.dataset.id;
+  if(a==='addEntry')addEntry();
+  else if(a==='delEntry'){ui.confirm={id};renderAll();}
+  else if(a==='delEntryYes'){data.entries=data.entries.filter(x=>x.id!==id);ui.confirm=null;save();renderAll();}
+  else if(a==='cancelConfirm'){ui.confirm=null;renderAll();}
+  else if(a==='showGoalForm'){ui.showGoalForm=true;renderAll();}
+  else if(a==='addGoal')addGoal();
+  else if(a==='editGoal'){ui.editGoal=id;ui.showGoalForm=false;renderAll();}
+  else if(a==='saveGoal')saveGoal(id);
+  else if(a==='cancelGoal'){ui.editGoal=null;ui.showGoalForm=false;renderAll();}
+  else if(a==='delGoal')delGoal(id);
+  else if(a==='addBuy')addBuy();
+  else if(a==='delBuy')delBuy(id);
+  else if(a==='savePrice')savePrice();
+  else if(a==='fetchPrice')fetchPrice();
+  else if(a==='export')exportData();
+  else if(a==='import')$('importfile').click();
+  else if(a==='reset')resetAll();
+});
+$('importfile').addEventListener('change',ev=>{
+  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{let d;try{d=JSON.parse(r.result);}catch(e){toast('讀取失敗');return;}
+    let nd;
+    if(Array.isArray(d))nd={goals:[],entries:d,holdings:[],price:0,priceTime:0};
+    else if(d&&typeof d==='object')nd={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],price:d.price||0,priceTime:d.priceTime||0};
+    else{toast('檔案格式不對');return;}
+    showModal('匯入會覆蓋目前所有資料，確定？','匯入').then(ok=>{if(ok){data=nd;save();renderAll();toast('已匯入');}});
+  };r.readAsText(f);ev.target.value='';
+});
+
+$('date').value=today();$('bdate').value=today();
+load();renderAll();
 </script>
 </body>
 </html>
