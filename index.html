@@ -75,8 +75,17 @@ select.input{appearance:none;-webkit-appearance:none;background-image:url("data:
 .sumcell{background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:11px 12px;}
 .sumcell .l{font-size:11px;color:var(--muted);letter-spacing:1px;}
 .sumcell .v{font-family:'Space Mono',monospace;font-weight:700;font-size:16px;margin-top:3px;}
-.sumcell.big{grid-column:1 / -1;}
-.sumcell.big .v{font-size:24px;}
+.asset-hero{background:linear-gradient(160deg,#163029,#13211d);border:1px solid var(--border);border-radius:16px;padding:18px 18px 15px;margin-bottom:12px;position:relative;overflow:hidden;}
+.asset-hero::after{content:"";position:absolute;right:-26px;top:-26px;width:120px;height:120px;background:radial-gradient(circle,rgba(98,182,166,0.20),transparent 70%);pointer-events:none;}
+.asset-total{font-family:'Space Mono',monospace;font-weight:700;font-size:34px;color:var(--text);margin-top:5px;line-height:1.05;}
+.asset-row{display:flex;gap:12px;align-items:baseline;margin-top:9px;font-size:13px;font-family:'Space Mono',monospace;flex-wrap:wrap;}
+.asset-pct{font-size:19px;font-weight:700;}
+.asset-twd{color:var(--muted);}
+.asset-cost{font-size:11px;color:var(--muted);margin-top:8px;}
+.chg{font-size:12px;font-family:'Space Mono',monospace;font-weight:700;margin-left:8px;}
+.alloc{height:6px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;margin-top:11px;}
+.alloc-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));border-radius:6px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.alloc-l{font-size:11px;color:var(--muted);margin-top:5px;font-family:'Space Mono',monospace;}
 .coinblk{padding:13px 0 3px;border-top:1px solid var(--border);}
 .coin-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
 .coin-name{font-weight:500;font-size:15px;}
@@ -140,6 +149,7 @@ select.input{appearance:none;-webkit-appearance:none;background-image:url("data:
 
   <div class="card">
     <div class="card-t">投資持有 · USDT 計價</div>
+    <div id="assethero"></div>
     <div class="field"><label>標的</label><select class="input" id="bcoin">
       <option value="BTC">比特幣 BTC</option>
       <option value="ETH">以太坊 ETH</option>
@@ -178,7 +188,7 @@ select.input{appearance:none;-webkit-appearance:none;background-image:url("data:
 <script>
 const KEY='waikuai_fund_v2', OLD='waikuai_fund_entries_v1';
 const COINS=[{k:'BTC',id:'bitcoin',name:'比特幣',cb:'BTC-USD'},{k:'ETH',id:'ethereum',name:'以太坊',cb:'ETH-USD'},{k:'SOL',id:'solana',name:'Solana',cb:'SOL-USD'}];
-let data={goals:[],entries:[],holdings:[],prices:{BTC:0,ETH:0,SOL:0},priceTime:0};
+let data={goals:[],entries:[],holdings:[],prices:{BTC:0,ETH:0,SOL:0},change24h:{},usdtwd:0,priceTime:0};
 let ui={confirm:null,editGoal:null,showGoalForm:false,lastGoal:'',lastCoin:'BTC'};
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -202,12 +212,14 @@ $('overlay').onclick=e=>{if(e.target===$('overlay'))closeModal(false);};
 function normalize(){
   data.goals=data.goals||[];data.entries=data.entries||[];data.holdings=data.holdings||[];
   if(!data.prices||typeof data.prices!=='object')data.prices={};
+  if(!data.change24h||typeof data.change24h!=='object')data.change24h={};
+  if(typeof data.usdtwd!=='number')data.usdtwd=0;
   ['BTC','ETH','SOL'].forEach(k=>{if(typeof data.prices[k]!=='number')data.prices[k]=0;});
   data.holdings.forEach(h=>{if(!h.coin)h.coin='BTC';});
 }
 function load(){
   try{const raw=localStorage.getItem(KEY);
-    if(raw){const d=JSON.parse(raw);data={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],prices:d.prices||{},priceTime:d.priceTime||0};}
+    if(raw){const d=JSON.parse(raw);data={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],prices:d.prices||{},change24h:d.change24h||{},usdtwd:d.usdtwd||0,priceTime:d.priceTime||0};}
     else{const old=localStorage.getItem(OLD);if(old){const arr=JSON.parse(old);if(Array.isArray(arr))data.entries=arr;}}
   }catch(e){}
   normalize();save();
@@ -259,34 +271,52 @@ function renderAll(){
     return '<div class="entry"><span class="e-date">'+e.date.slice(5)+'</span><span class="e-note">'+esc(e.note||'外快')+chip+'</span><span class="e-amt">+'+fmt(e.amount)+'</span>'+del+'</div>';
   }).join('');}
 
-  // 投資 — 現價面板（永遠顯示，可手動可抓取）
+  // ---- 投資 ----
+  const rows=[];let TV=0,TC=0,TChold=0,unpriced=false;
+  COINS.forEach(c=>{
+    const hs=data.holdings.filter(h=>h.coin===c.k);if(!hs.length)return;
+    const tc=hs.reduce((s,h)=>s+h.cost,0);const tq=hs.reduce((s,h)=>s+h.qty,0);
+    const pr=data.prices[c.k]||0;const avg=tq>0?tc/tq:0;const val=pr>0?tq*pr:0;
+    rows.push({c,tc,tq,pr,avg,val});TChold+=tc;if(pr>0){TV+=val;TC+=tc;}else unpriced=true;
+  });
+  // 資產總額 hero
+  if(data.holdings.length>0){
+    const PL=TV-TC;const PLP=TC>0?PL/TC*100:0;const up=PL>=0;const col=up?'var(--up)':'var(--down)';const sg=up?'+':'';
+    const twd=data.usdtwd>0?TV*data.usdtwd:0;
+    let ah='<div class="asset-hero"><div class="hero-label">投資總資產（USDT）</div>'
+      +'<div class="asset-total">'+fmtUsd(TV)+'</div>'
+      +'<div class="asset-row"><span class="asset-pct" style="color:'+col+'">'+sg+PLP.toFixed(2)+'%</span>'
+      +'<span style="color:'+col+'">'+sg+fmtUsd(PL)+' USDT</span>'
+      +(twd>0?'<span class="asset-twd">≈ NT$ '+fmt(twd)+'</span>':'')+'</div>'
+      +'<div class="asset-cost">總成本 '+fmtUsd(TChold)+' USDT'+(unpriced?'　·　有標的未設現價，數字未完整':'')+'</div></div>';
+    $('assethero').innerHTML=ah;
+  }else $('assethero').innerHTML='';
+
+  // 現價面板（永遠顯示）
   let hh='<div class="card-sub">現價（USDT）</div>';
   COINS.forEach(c=>{hh+='<div class="prow"><span class="pk">'+c.k+'</span><input class="input" id="p_'+c.k+'" type="number" inputmode="decimal" placeholder="'+c.name+'現價" value="'+(data.prices[c.k]||'')+'"></div>';});
   hh+='<div class="row2"><button class="mini" data-action="savePrice">套用價格</button><button class="mini gold" id="fetchbtn" data-action="fetchPrice">抓即時價</button></div>';
   hh+='<div class="price-time">'+(data.priceTime?'現價更新於 '+timeStr(data.priceTime):'尚未設定現價，點「抓即時價」或手動輸入')+'</div>';
 
   if(data.holdings.length===0){
-    hh+='<div class="hint">選好標的，記錄每次的<b>成本（USDT）</b>和<b>數量</b>，這裡就會分別顯示三隻的持有量、均價與<b>漲跌幅</b>。</div>';
+    hh+='<div class="hint">選好標的，記錄每次的<b>成本（USDT）</b>和<b>數量</b>，這裡就會分別顯示三隻的持有量、均價、配置佔比與<b>漲跌幅</b>。</div>';
   }else{
-    let TC=0,TV=0,blocks='';
-    COINS.forEach(c=>{
-      const hs=data.holdings.filter(h=>h.coin===c.k);if(!hs.length)return;
-      const tc=hs.reduce((s,h)=>s+h.cost,0);const tq=hs.reduce((s,h)=>s+h.qty,0);
-      const avg=tq>0?tc/tq:0;const pr=data.prices[c.k]||0;const val=tq*pr;const pl=val-tc;const plPct=tc>0?pl/tc*100:0;
-      const up=pl>=0;const col=up?'var(--up)':'var(--down)';const sg=up?'+':'';TC+=tc;TV+=val;
-      blocks+='<div class="coinblk"><div class="coin-top"><span class="coin-name">'+c.name+' '+c.k+'</span>'
-        +'<span class="coin-pct" style="color:'+col+'">'+(pr>0?sg+plPct.toFixed(2)+'%':'—')+'</span></div>'
+    rows.forEach(rw=>{
+      const c=rw.c,tc=rw.tc,tq=rw.tq,pr=rw.pr,avg=rw.avg,val=rw.val;
+      const pl=pr>0?val-tc:0;const plPct=(pr>0&&tc>0)?pl/tc*100:0;
+      const up=pl>=0;const col=up?'var(--up)':'var(--down)';const sg=up?'+':'';
+      const ch=data.change24h[c.k];
+      const chHtml=(typeof ch==='number')?'<span class="chg" style="color:'+(ch>=0?'var(--up)':'var(--down)')+'">'+(ch>=0?'+':'')+ch.toFixed(1)+'%<small style="color:var(--muted);font-weight:400"> 24h</small></span>':'';
+      const alloc=(TV>0&&pr>0)?val/TV*100:0;
+      hh+='<div class="coinblk"><div class="coin-top"><span class="coin-name">'+c.name+' '+c.k+chHtml+'</span>'
+        +'<span class="coin-pct" style="color:'+(pr>0?col:'var(--muted)')+'">'+(pr>0?sg+plPct.toFixed(2)+'%':'設現價')+'</span></div>'
         +'<div class="sumgrid"><div class="sumcell"><div class="l">持有</div><div class="v">'+fmtQty(tq)+'</div></div>'
         +'<div class="sumcell"><div class="l">均價</div><div class="v">'+fmtUsd(avg)+'</div></div>'
-        +'<div class="sumcell"><div class="l">現值 USDT</div><div class="v">'+fmtUsd(val)+'</div></div>'
-        +'<div class="sumcell"><div class="l">成本 USDT</div><div class="v">'+fmtUsd(tc)+'</div></div></div></div>';
+        +'<div class="sumcell"><div class="l">現值 USDT</div><div class="v">'+(pr>0?fmtUsd(val):'—')+'</div></div>'
+        +'<div class="sumcell"><div class="l">成本 USDT</div><div class="v">'+fmtUsd(tc)+'</div></div></div>'
+        +(pr>0?'<div class="alloc"><div class="alloc-bar" style="width:'+alloc.toFixed(0)+'%"></div></div><div class="alloc-l">配置佔比 '+alloc.toFixed(1)+'%</div>':'')
+        +'</div>';
     });
-    const PL=TV-TC;const PLP=TC>0?PL/TC*100:0;const up=PL>=0;const col=up?'var(--up)':'var(--down)';const sg=up?'+':'';
-    hh+='<div class="sumgrid" style="margin-top:6px"><div class="sumcell big"><div class="l">總漲跌幅</div>'
-      +'<div class="v" style="color:'+col+'">'+sg+PLP.toFixed(2)+'%　<span style="font-size:14px">'+sg+fmtUsd(PL)+' USDT</span></div></div>'
-      +'<div class="sumcell"><div class="l">總現值</div><div class="v">'+fmtUsd(TV)+'</div></div>'
-      +'<div class="sumcell"><div class="l">總成本</div><div class="v">'+fmtUsd(TC)+'</div></div></div>';
-    hh+=blocks;
     const bs=[...data.holdings].sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
     hh+='<div style="margin-top:10px;border-top:1px solid var(--border)">'+bs.map(h=>'<div class="entry"><span class="e-date">'+h.date.slice(5)+'</span><span class="e-note">'+h.coin+' · '+fmtQty(h.qty)+'</span><span class="e-amt">$'+fmtUsd(h.cost)+'</span><button class="x" data-action="delBuy" data-id="'+h.id+'">&times;</button></div>').join('')+'</div>';
   }
@@ -317,16 +347,20 @@ function addBuy(){
 async function delBuy(id){if(!(await showModal('刪除這筆買入記錄？','刪除')))return;data.holdings=data.holdings.filter(x=>x.id!==id);save();renderAll();}
 function savePrice(){let any=false;COINS.forEach(c=>{const v=parseFloat($('p_'+c.k).value);if(v&&v>0){data.prices[c.k]=v;any=true;}});if(any){data.priceTime=Date.now();save();renderAll();toast('現價已更新');}else toast('請輸入現價');}
 async function fetchPrice(){
-  const b=$('fetchbtn');if(b)b.textContent='抓取中…';let got={};
-  try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
-    if(r.ok){const j=await r.json();if(j.bitcoin&&j.bitcoin.usd)got.BTC=j.bitcoin.usd;if(j.ethereum&&j.ethereum.usd)got.ETH=j.ethereum.usd;if(j.solana&&j.solana.usd)got.SOL=j.solana.usd;}}catch(e){}
+  const b=$('fetchbtn');if(b)b.textContent='抓取中…';let got={},chg={},rate=0;
+  try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,twd&include_24hr_change=true');
+    if(r.ok){const j=await r.json();const map={BTC:'bitcoin',ETH:'ethereum',SOL:'solana'};
+      Object.keys(map).forEach(k=>{const o=j[map[k]];if(o&&o.usd){got[k]=o.usd;if(typeof o.usd_24h_change==='number')chg[k]=o.usd_24h_change;}});
+      if(j.tether&&j.tether.twd)rate=j.tether.twd;}
+  }catch(e){}
   for(const c of COINS){if(!got[c.k]){try{const r=await fetch('https://api.coinbase.com/v2/prices/'+c.cb+'/spot');if(r.ok){const j=await r.json();const a=j&&j.data&&j.data.amount;if(a)got[c.k]=parseFloat(a);}}catch(e){}}}
+  if(!rate){try{const r=await fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD');if(r.ok){const j=await r.json();const t=j&&j.data&&j.data.rates&&j.data.rates.TWD;if(t)rate=parseFloat(t);}}catch(e){}}
   const ks=Object.keys(got);
-  if(ks.length){ks.forEach(k=>data.prices[k]=got[k]);data.priceTime=Date.now();save();renderAll();toast(ks.length===3?'已抓到三隻即時價':'抓到部分，其餘請手動');}
+  if(ks.length){ks.forEach(k=>data.prices[k]=got[k]);data.change24h=chg;if(rate)data.usdtwd=rate;data.priceTime=Date.now();save();renderAll();toast(ks.length===3?'已更新即時價':'抓到部分，其餘請手動');}
   else{if(b)b.textContent='抓取失敗·請手動輸入';toast('暫時抓不到，請手動輸入現價');setTimeout(renderAll,1800);}
 }
 function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='外快基金備份_'+today()+'.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
-async function resetAll(){if(!(await showModal('確定要清空「全部」資料嗎？所有目標、外快與投資記錄都會刪除，且無法復原。建議先匯出備份。','清空全部')))return;data={goals:[],entries:[],holdings:[],prices:{BTC:0,ETH:0,SOL:0},priceTime:0};ui={confirm:null,editGoal:null,showGoalForm:false,lastGoal:'',lastCoin:'BTC'};save();renderAll();toast('已全部重置');}
+async function resetAll(){if(!(await showModal('確定要清空「全部」資料嗎？所有目標、外快與投資記錄都會刪除，且無法復原。建議先匯出備份。','清空全部')))return;data={goals:[],entries:[],holdings:[],prices:{BTC:0,ETH:0,SOL:0},change24h:{},usdtwd:0,priceTime:0};ui={confirm:null,editGoal:null,showGoalForm:false,lastGoal:'',lastCoin:'BTC'};save();renderAll();toast('已全部重置');}
 
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-action]');if(!el)return;const a=el.dataset.action,id=el.dataset.id;
@@ -352,8 +386,8 @@ $('importfile').addEventListener('change',ev=>{
   const f=ev.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{let d;try{d=JSON.parse(r.result);}catch(e){toast('讀取失敗');return;}
     let nd;
-    if(Array.isArray(d))nd={goals:[],entries:d,holdings:[],prices:{BTC:0,ETH:0,SOL:0},priceTime:0};
-    else if(d&&typeof d==='object')nd={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],prices:d.prices||{},priceTime:d.priceTime||0};
+    if(Array.isArray(d))nd={goals:[],entries:d,holdings:[],prices:{BTC:0,ETH:0,SOL:0},change24h:{},usdtwd:0,priceTime:0};
+    else if(d&&typeof d==='object')nd={goals:d.goals||[],entries:d.entries||[],holdings:d.holdings||[],prices:d.prices||{},change24h:d.change24h||{},usdtwd:d.usdtwd||0,priceTime:d.priceTime||0};
     else{toast('檔案格式不對');return;}
     showModal('匯入會覆蓋目前所有資料，確定？','匯入').then(ok=>{if(ok){data=nd;normalize();save();renderAll();toast('已匯入');}});
   };r.readAsText(f);ev.target.value='';
